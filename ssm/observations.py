@@ -799,6 +799,7 @@ class AutoRegressiveObservations(_AutoRegressiveObservationsBase):
         self.l2_penalty_V = l2_penalty_V
         
         self.fit_v = True
+        self.fit_sigma = True
 
     @property
     def A(self):
@@ -871,12 +872,15 @@ class AutoRegressiveObservations(_AutoRegressiveObservationsBase):
             else: 
                 Xs = [np.column_stack([data[t + l] for l in range(self.lags)])
                        for t, data, input in zip(ts, datas, inputs)]
-                ys = [data[t+self.lags]-input[t, :self.M]@self.Vs[k] for t, data, input in zip(ts, datas, inputs)]
+                ys = [data[t+self.lags]-input[t, :self.M]@self.Vs[k].T for t, data, input in zip(ts, datas, inputs)]
                 
             
             
             # Solve the linear regression
             coef_, intercept_, Sigma = fit_linear_regression(Xs, ys)
+            
+            if ~self.fit_sigma: Sigma = self.Sigmas[k]
+            
             self.As[k] = coef_[:, :self.D * self.lags]
             if self.fit_v: self.Vs[k] = coef_[:, self.D * self.lags:]
             
@@ -990,7 +994,7 @@ class AutoRegressiveObservations(_AutoRegressiveObservationsBase):
                 Sigmas[k] = Sigmas[i]
 
         # Store the updated covariances
-        self.Sigmas = Sigmas
+        if self.fit_sigma: self.Sigmas = Sigmas
 
     def sample_x(self, z, xhist, input=None, tag=None, with_noise=True):
         D, As, bs, Vs = self.D, self.As, self.bs, self.Vs

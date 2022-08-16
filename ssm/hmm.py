@@ -351,7 +351,7 @@ class HMM(object):
 
         # Set up the progress bar
         lls = [-_objective(self.params, 0) * T]
-        pbar = trange(num_iters)
+        pbar = trange(num_iters,disable=True)
         pbar.set_description("Epoch {} Itr {} LP: {:.1f}".format(0, 0, lls[-1]))
 
         # Run the optimizer
@@ -755,7 +755,7 @@ class HSMM(HMM):
         """
         lls = [self.log_probability(datas, inputs, masks, tags)]
 
-        pbar = trange(num_iters)
+        pbar = trange(num_iters,disable=True)
         pbar.set_description("LP: {:.1f}".format(lls[-1]))
         for itr in pbar:
             # E step: compute expected latent states with current parameters
