@@ -964,9 +964,10 @@ class AutoRegressiveObservations(_AutoRegressiveObservationsBase):
                 weighted_x = x * Ez[:, k:k+1]
                 J[k] += np.dot(weighted_x.T, x)
                 h[k] += np.dot(weighted_x.T, y)
-
-
-        mus = np.linalg.solve(J, h)
+        
+        mus = np.stack([np.linalg.lstsq(J[k], h[k])[0] for k in range(len(J))])
+        # mus = np.linalg.solve(J, h)
+        
         self.As = np.swapaxes(mus[:, :D*lags, :], 1, 2)
         if self.fit_v: self.Vs = np.swapaxes(mus[:, D*lags:D*lags+M, :], 1, 2)
         self.bs = mus[:, -1, :]
